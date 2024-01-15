@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="NoiseWithSpline" load_steps=14 format=3 uid="uid://bhe8x2nbksuii"]
+
+[ext_resource type="Resource" uid="uid://cfbygl2qaexs4" path="res://Assets/NoiseSettings/ContinentalnessNoise.tres" id="1_fifai"]
+[ext_resource type="Script" path="res://Source/VoxelEngine/Data/SplinePoint.cs" id="2_u582y"]
+[ext_resource type="Script" path="res://Source/VoxelEngine/Data/NoiseSpline.cs" id="3_2u5he"]
+[ext_resource type="Script" path="res://Source/VoxelEngine/Data/NoiseWithSpline.cs" id="4_gxiff"]
+
+[sub_resource type="Resource" id="Resource_1bhpj"]
+script = ExtResource("2_u582y")
+Point = -1.0
+Value = 100
+
+[sub_resource type="Resource" id="Resource_sllna"]
+script = ExtResource("2_u582y")
+Point = -0.25
+Value = 100
+
+[sub_resource type="Resource" id="Resource_fp3xi"]
+script = ExtResource("2_u582y")
+Point = 0.2
+Value = 150
+
+[sub_resource type="Resource" id="Resource_n5jc1"]
+script = ExtResource("2_u582y")
+Point = 0.4
+Value = 150
+
+[sub_resource type="Resource" id="Resource_5eqsy"]
+script = ExtResource("2_u582y")
+Point = 0.6
+Value = 200
+
+[sub_resource type="Resource" id="Resource_ct2xc"]
+script = ExtResource("2_u582y")
+Point = 0.8
+Value = 1
+
+[sub_resource type="Resource" id="Resource_kjn03"]
+script = ExtResource("2_u582y")
+Point = 0.9
+Value = 220
+
+[sub_resource type="Resource" id="Resource_0t2a6"]
+script = ExtResource("2_u582y")
+Point = 1.0
+Value = 225
+
+[sub_resource type="Resource" id="Resource_s0n30"]
+script = ExtResource("3_2u5he")
+MinValue = -1.0
+MaxValue = 1.0
+SplinePoints = [SubResource("Resource_1bhpj"), SubResource("Resource_sllna"), SubResource("Resource_fp3xi"), SubResource("Resource_n5jc1"), SubResource("Resource_5eqsy"), SubResource("Resource_ct2xc"), SubResource("Resource_kjn03"), SubResource("Resource_0t2a6")]
+
+[resource]
+script = ExtResource("4_gxiff")
+NoiseMapSettings = ExtResource("1_fifai")
+NoiseSpline = SubResource("Resource_s0n30")

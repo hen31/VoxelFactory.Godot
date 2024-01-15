@@ -1,0 +1,44 @@
+[gd_scene load_steps=9 format=3 uid="uid://7fe3pm8rpn2o"]
+
+[ext_resource type="Script" path="res://Source/VoxelEngine/Nodes/ChunkSystemNode.cs" id="1_c2ome"]
+[ext_resource type="Script" path="res://cameratemp.gd" id="1_heclq"]
+[ext_resource type="Environment" uid="uid://cjbfsnde6i1u2" path="res://Assets/Enviroment.tres" id="1_rp8t8"]
+[ext_resource type="Script" path="res://Source/VoxelEngine/Nodes/ChunkVisualsGeneratorNode.cs" id="2_8kfkr"]
+[ext_resource type="Material" uid="uid://7s4h0jsqy2th" path="res://Assets/testmaterial.material" id="2_gce65"]
+[ext_resource type="Script" path="res://Source/VoxelEngine/Nodes/ChunkGeneratorNode.cs" id="2_od6uj"]
+[ext_resource type="Resource" uid="uid://bhe8x2nbksuii" path="res://Assets/NoiseSettings/ContinentalnessNoiseSettings.tres" id="5_3voqx"]
+[ext_resource type="Resource" uid="uid://cv2ekltj4nbcl" path="res://Assets/NoiseSettings/ErrosionNoiseSettings.tres" id="6_b5j42"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_rp8t8")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, 0)
+environment = ExtResource("1_rp8t8")
+current = true
+script = ExtResource("1_heclq")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 28.0948, 42.3734)
+shadow_enabled = true
+
+[node name="ChunkSystem" type="Node3D" parent="." node_paths=PackedStringArray("_chunkGenerator", "_chunkVisualGenerator", "Camera")]
+script = ExtResource("1_c2ome")
+_chunkGenerator = NodePath("../ChunkGenerator")
+_chunkVisualGenerator = NodePath("../ChunkVisualGeneratorSystem")
+Camera = NodePath("../Camera3D")
+_chunkSize = Vector2(16, 16)
+Radius = 8
+BlockMaterial = ExtResource("2_gce65")
+
+[node name="ChunkGenerator" type="Node3D" parent="."]
+script = ExtResource("2_od6uj")
+ChunkHeight = 512
+ChunkSize = Vector2(16, 16)
+Continentalness = ExtResource("5_3voqx")
+Errosion = ExtResource("6_b5j42")
+
+[node name="ChunkVisualGeneratorSystem" type="Node3D" parent="."]
+script = ExtResource("2_8kfkr")

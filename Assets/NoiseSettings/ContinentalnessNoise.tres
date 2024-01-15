@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NoiseMapSettings" load_steps=2 format=3 uid="uid://cfbygl2qaexs4"]
+
+[ext_resource type="Script" path="res://Source/VoxelEngine/Data/NoiseMapSettings.cs" id="1_5cy5i"]
+
+[resource]
+script = ExtResource("1_5cy5i")
+Seed = 123
+Octaves = 4
+Lacunarity = 0.5
+Persistance = 1.87
+Scale = 0.01

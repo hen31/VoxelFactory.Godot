@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="NoiseWithSpline" load_steps=12 format=3 uid="uid://cv2ekltj4nbcl"]
+
+[ext_resource type="Script" path="res://Source/VoxelEngine/Data/NoiseMapSettings.cs" id="1_yqpss"]
+[ext_resource type="Script" path="res://Source/VoxelEngine/Data/NoiseSpline.cs" id="2_23fve"]
+[ext_resource type="Script" path="res://Source/VoxelEngine/Data/SplinePoint.cs" id="2_uvxcw"]
+[ext_resource type="Script" path="res://Source/VoxelEngine/Data/NoiseWithSpline.cs" id="3_wylum"]
+
+[sub_resource type="Resource" id="Resource_g8j5n"]
+script = ExtResource("1_yqpss")
+Seed = 84526
+Octaves = 4
+Lacunarity = 0.5
+Persistance = 1.87
+Scale = 0.02
+
+[sub_resource type="Resource" id="Resource_5fy2p"]
+script = ExtResource("2_uvxcw")
+Point = -1.0
+Value = 30
+
+[sub_resource type="Resource" id="Resource_3aard"]
+script = ExtResource("2_uvxcw")
+Point = -0.5
+Value = 15
+
+[sub_resource type="Resource" id="Resource_wtly8"]
+script = ExtResource("2_uvxcw")
+Point = 0.0
+Value = 15
+
+[sub_resource type="Resource" id="Resource_fs4by"]
+script = ExtResource("2_uvxcw")
+Point = 0.5
+Value = 10
+
+[sub_resource type="Resource" id="Resource_6nrve"]
+script = ExtResource("2_uvxcw")
+Point = 1.0
+Value = 15
+
+[sub_resource type="Resource" id="Resource_7aiwb"]
+script = ExtResource("2_23fve")
+MinValue = -1.0
+MaxValue = 1.0
+SplinePoints = [SubResource("Resource_5fy2p"), SubResource("Resource_3aard"), SubResource("Resource_wtly8"), SubResource("Resource_fs4by"), SubResource("Resource_6nrve")]
+
+[resource]
+script = ExtResource("3_wylum")
+NoiseMapSettings = SubResource("Resource_g8j5n")
+NoiseSpline = SubResource("Resource_7aiwb")
