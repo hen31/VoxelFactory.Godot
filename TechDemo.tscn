@@ -1,13 +1,15 @@
-[gd_scene load_steps=9 format=3 uid="uid://7fe3pm8rpn2o"]
+[gd_scene load_steps=10 format=3 uid="uid://7fe3pm8rpn2o"]
 
 [ext_resource type="Script" path="res://Source/VoxelEngine/Nodes/ChunkSystemNode.cs" id="1_c2ome"]
 [ext_resource type="Script" path="res://cameratemp.gd" id="1_heclq"]
 [ext_resource type="Environment" uid="uid://cjbfsnde6i1u2" path="res://Assets/Enviroment.tres" id="1_rp8t8"]
 [ext_resource type="Script" path="res://Source/VoxelEngine/Nodes/ChunkVisualsGeneratorNode.cs" id="2_8kfkr"]
-[ext_resource type="Material" uid="uid://7s4h0jsqy2th" path="res://Assets/testmaterial.material" id="2_gce65"]
 [ext_resource type="Script" path="res://Source/VoxelEngine/Nodes/ChunkGeneratorNode.cs" id="2_od6uj"]
+[ext_resource type="Material" uid="uid://ywurqyycvxm1" path="res://Assets/Materials/CustomBlockMaterial.material" id="4_xcaqh"]
 [ext_resource type="Resource" uid="uid://bhe8x2nbksuii" path="res://Assets/NoiseSettings/ContinentalnessNoiseSettings.tres" id="5_3voqx"]
 [ext_resource type="Resource" uid="uid://cv2ekltj4nbcl" path="res://Assets/NoiseSettings/ErrosionNoiseSettings.tres" id="6_b5j42"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_ntp3h"]
 
 [node name="Node3D" type="Node3D"]
 
@@ -20,18 +22,14 @@ environment = ExtResource("1_rp8t8")
 current = true
 script = ExtResource("1_heclq")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 28.0948, 42.3734)
-shadow_enabled = true
-
 [node name="ChunkSystem" type="Node3D" parent="." node_paths=PackedStringArray("_chunkGenerator", "_chunkVisualGenerator", "Camera")]
 script = ExtResource("1_c2ome")
 _chunkGenerator = NodePath("../ChunkGenerator")
 _chunkVisualGenerator = NodePath("../ChunkVisualGeneratorSystem")
 Camera = NodePath("../Camera3D")
 _chunkSize = Vector2(16, 16)
-Radius = 8
-BlockMaterial = ExtResource("2_gce65")
+Radius = 12
+BlockMaterial = ExtResource("4_xcaqh")
 
 [node name="ChunkGenerator" type="Node3D" parent="."]
 script = ExtResource("2_od6uj")
@@ -42,3 +40,11 @@ Errosion = ExtResource("6_b5j42")
 
 [node name="ChunkVisualGeneratorSystem" type="Node3D" parent="."]
 script = ExtResource("2_8kfkr")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 49.2984, -5.12069)
+mesh = SubResource("BoxMesh_ntp3h")
+surface_material_override/0 = ExtResource("4_xcaqh")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.620423, 0.784268, 0, -0.784268, 0.620423, 0, 21.1052, 0)

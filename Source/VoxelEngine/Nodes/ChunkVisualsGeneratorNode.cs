@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,6 +17,7 @@ public partial class ChunkVisualsGeneratorNode : Node
 
     public Dictionary<ushort, BlockTextureUvMapping> BlockUvMapping { get; set; }
     public Material Material { get; set; }
+
     public override void _Ready()
     {
         //_voxelSize = Entity.Get<ChunkSystemComponent>().VoxelSize;
@@ -253,19 +255,19 @@ public partial class ChunkVisualsGeneratorNode : Node
         var sideVertexes = new VertexWithUv[4];
         sideVertexes[0].Position = vectorOfPosition + new Vector3(0f, _voxelSize, 0f) + offSet;
         sideVertexes[0].TextureCoordinate = uvPositionTop;
-        //sideVertexes[0].Normal = normal;
+        sideVertexes[0].LightIntensity = 1;
 
         sideVertexes[1].Position = vectorOfPosition + new Vector3(_voxelSize, _voxelSize, 0f) + offSet;
         sideVertexes[1].TextureCoordinate = uvPositionTop + new Vector2(uvScale.X, 0);
-        //  sideVertexes[1].Normal = normal;
+        sideVertexes[1].LightIntensity = 1;
 
         sideVertexes[2].Position = vectorOfPosition + new Vector3(_voxelSize, _voxelSize, _voxelSize) + offSet;
         sideVertexes[2].TextureCoordinate = uvPositionTop + uvScale;
-        // sideVertexes[2].Normal = normal;
+        sideVertexes[2].LightIntensity = 1;
 
         sideVertexes[3].Position = vectorOfPosition + new Vector3(0f, _voxelSize, _voxelSize) + offSet;
         sideVertexes[3].TextureCoordinate = uvPositionTop + new Vector2(0, uvScale.Y);
-        // sideVertexes[3].Normal = normal;
+         sideVertexes[3].LightIntensity = 1;
 
 
         int[] indices = { 1, 2, 0, 0, 2, 3 };
@@ -334,15 +336,17 @@ public partial class ChunkVisualsGeneratorNode : Node
 
     private Mesh GenerateVisuals(List<VertexWithUv> vertices, List<int> indexes, Material material)
     {
-
+        Random r = new Random();
         SurfaceTool surfaceTool = new SurfaceTool();
         surfaceTool.Begin(Mesh.PrimitiveType.Triangles);
         surfaceTool.SetMaterial(material);
+        surfaceTool.SetCustomFormat(0, SurfaceTool.CustomFormat.Rgba8Unorm);
 
         foreach (var index in indexes)
         {
             var vertex = vertices[index];
             surfaceTool.SetUV(vertex.TextureCoordinate);
+            surfaceTool.SetCustom(0, new Color(1, 1, 1, vertex.LightIntensity));
             surfaceTool.AddVertex(vertex.Position);
         }
 
