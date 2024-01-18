@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://7fe3pm8rpn2o"]
+[gd_scene load_steps=11 format=3 uid="uid://7fe3pm8rpn2o"]
 
 [ext_resource type="Script" path="res://Source/VoxelEngine/Nodes/ChunkSystemNode.cs" id="1_c2ome"]
 [ext_resource type="Script" path="res://cameratemp.gd" id="1_heclq"]
@@ -8,6 +8,7 @@
 [ext_resource type="Material" uid="uid://ywurqyycvxm1" path="res://Assets/Materials/CustomBlockMaterial.material" id="4_xcaqh"]
 [ext_resource type="Resource" uid="uid://bhe8x2nbksuii" path="res://Assets/NoiseSettings/ContinentalnessNoiseSettings.tres" id="5_3voqx"]
 [ext_resource type="Resource" uid="uid://cv2ekltj4nbcl" path="res://Assets/NoiseSettings/ErrosionNoiseSettings.tres" id="6_b5j42"]
+[ext_resource type="Script" path="res://DebugLabel.gd" id="9_7diy5"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_ntp3h"]
 
@@ -48,3 +49,8 @@ surface_material_override/0 = ExtResource("4_xcaqh")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.620423, 0.784268, 0, -0.784268, 0.620423, 0, 21.1052, 0)
+
+[node name="Label" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("9_7diy5")

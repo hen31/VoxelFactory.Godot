@@ -11,6 +11,7 @@ namespace TurtleGames.VoxelEngine;
 [GlobalClass]
 public partial class ChunkVisualsGeneratorNode : Node
 {
+    public const float OcculusionFactor = 0.75f;
     [Export] private float _voxelSize = 1f;
     private CancellationTokenSource _cancellationToken;
     private ConcurrentQueue<ChunkVisualsRequest> _calculationQueue = new ConcurrentQueue<ChunkVisualsRequest>();
@@ -95,7 +96,13 @@ public partial class ChunkVisualsGeneratorNode : Node
             0, //Right 2
             0, //Front 3
             0, //Top 4
-            0 //Bottom 5
+            0, //Bottom 5
+            0, //Up and one back 6
+            0, //Down and one front 7
+            0, //Left and Down front 8
+            0, //right and Down front 9
+            0, //back and Down 10
+            0, //back and up 11
         };
 
         neighbours[0] = x == 0
@@ -115,6 +122,51 @@ public partial class ChunkVisualsGeneratorNode : Node
 
         neighbours[5] = y == 0 ? 0 : chunkData.Chunk[x, y - 1, z];
         neighbours[4] = y == chunkData.Height - 1 ? 0 : chunkData.Chunk[x, y + 1, z];
+
+        neighbours[6] = 0; /*z == 0
+            ? neighbourChunks[2].Chunk[x, y+1, (int)chunkData.Size.Y - 1]
+            : chunkData.Chunk[x, y+1, z - 1];*/
+
+
+        if (y == 0)
+        {
+            neighbours[7] = 0;
+            neighbours[8] = 0;
+            neighbours[9] = 0;
+            neighbours[10] = 0;
+        }
+        else
+        {
+            neighbours[7] = z == (int)chunkData.Size.Y - 1
+                ? neighbourChunks[0].Chunk[x, y - 1, 0]
+                : chunkData.Chunk[x, y - 1, z + 1];
+
+            neighbours[8] = x == 0
+                ? neighbourChunks[3].Chunk[(int)chunkData.Size.X - 1, y - 1, z]
+                : chunkData.Chunk[x - 1, y - 1, z];
+
+            neighbours[9] = x == (int)chunkData.Size.X - 1
+                ? neighbourChunks[1].Chunk[0, y - 1, z]
+                : chunkData.Chunk[x + 1, y - 1, z];
+
+            neighbours[10] = z == 0
+                ? neighbourChunks[2].Chunk[x, y - 1, (int)chunkData.Size.Y - 1]
+                : chunkData.Chunk[x, y - 1, z - 1];
+            
+     
+        }
+
+        if (y == chunkData.Height - 1)
+        {
+            neighbours[11] = 0;
+        }
+        else
+        {
+            neighbours[11] = z == 0
+                ? neighbourChunks[2].Chunk[x, y + 1, (int)chunkData.Size.Y - 1]
+                : chunkData.Chunk[x, y + 1, z - 1];
+        }
+
         return neighbours;
     }
 
@@ -126,39 +178,43 @@ public partial class ChunkVisualsGeneratorNode : Node
         var offsetWithHeight = new Vector3(offSet.X, 0, offSet.Y);
         if (neighBours[2] == 0)
         {
-            AddRightSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.LeftSide, blockUvMapping.UvScale);
+            AddRightSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.LeftSide, blockUvMapping.UvScale,
+                1f, neighBours);
         }
 
         if (neighBours[0] == 0)
         {
-            AddLeftSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.LeftSide, blockUvMapping.UvScale);
+            AddLeftSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.LeftSide, blockUvMapping.UvScale,
+                1f, neighBours);
         }
 
         if (neighBours[4] == 0)
         {
-            AddTopSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.TopSide, blockUvMapping.UvScale);
+            AddTopSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.TopSide, blockUvMapping.UvScale,
+                1f, neighBours);
         }
 
         if (neighBours[5] == 0)
         {
             AddBottomSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.BottomSide,
-                blockUvMapping.UvScale);
+                blockUvMapping.UvScale, 1f);
         }
 
         if (neighBours[3] == 0)
         {
             AddFrontSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.FrontSide,
-                blockUvMapping.UvScale);
+                blockUvMapping.UvScale, 1f, neighBours);
         }
 
         if (neighBours[1] == 0)
         {
-            AddBackSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.BackSide, blockUvMapping.UvScale);
+            AddBackSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.BackSide, blockUvMapping.UvScale,
+                1f, neighBours);
         }
     }
 
     private void AddBackSide(List<VertexWithUv> vertices, List<int> indexes, int x, int y, int z,
-        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale)
+        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale, float lightIntensity, int[] neighBours)
     {
         //var normal = Vector3.UnitZ;
         var startIndex = vertices.Count;
@@ -166,20 +222,27 @@ public partial class ChunkVisualsGeneratorNode : Node
         var sideVertexes = new VertexWithUv[4];
         sideVertexes[0].Position = vectorOfPosition + new Vector3(0f, 0f, 0f) + offSet;
         sideVertexes[0].TextureCoordinate = uvPositionTop + uvScale;
-        //sideVertexes[0].Normal = normal;
+        sideVertexes[0].LightIntensity = lightIntensity;
+        if (neighBours[10] != 0)
+        {
+            sideVertexes[0].LightIntensity *= OcculusionFactor;
+        }
 
         sideVertexes[1].Position = vectorOfPosition + new Vector3(0f, _voxelSize, 0f) + offSet;
         sideVertexes[1].TextureCoordinate = uvPositionTop + new Vector2(uvScale.X, 0);
-        //  sideVertexes[1].Normal = normal;
+        sideVertexes[1].LightIntensity = lightIntensity;
 
         sideVertexes[2].Position = vectorOfPosition + new Vector3(_voxelSize, _voxelSize, 0f) + offSet;
         sideVertexes[2].TextureCoordinate = uvPositionTop;
-        //sideVertexes[2].Normal = normal;
+        sideVertexes[2].LightIntensity = lightIntensity;
 
         sideVertexes[3].Position = vectorOfPosition + new Vector3(_voxelSize, 0f, 0f) + offSet;
         sideVertexes[3].TextureCoordinate = uvPositionTop + new Vector2(0, uvScale.Y);
-        //sideVertexes[3].Normal = normal;
-
+        sideVertexes[3].LightIntensity = lightIntensity;
+        if (neighBours[10] != 0)
+        {
+            sideVertexes[3].LightIntensity *= OcculusionFactor;
+        }
         int[] indices = { 1, 2, 0, 0, 2, 3 };
 
         vertices.AddRange(sideVertexes);
@@ -187,7 +250,7 @@ public partial class ChunkVisualsGeneratorNode : Node
     }
 
     private void AddFrontSide(List<VertexWithUv> vertices, List<int> indexes, int x, int y, int z,
-        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale)
+        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale, float lightIntensity, int[] neighbours)
     {
         //  var normal = Vector3.UnitZ;
 
@@ -196,19 +259,35 @@ public partial class ChunkVisualsGeneratorNode : Node
         var sideVertexes = new VertexWithUv[4];
         sideVertexes[0].Position = vectorOfPosition + new Vector3(0f, 0f, _voxelSize) + offSet;
         sideVertexes[0].TextureCoordinate = uvPositionTop + new Vector2(0, uvScale.Y);
-        //  sideVertexes[0].Normal = normal;
+        sideVertexes[0].LightIntensity = lightIntensity;
+        if (neighbours[7] != 0)
+        {
+            sideVertexes[0].LightIntensity *= OcculusionFactor;
+        }
 
         sideVertexes[1].Position = vectorOfPosition + new Vector3(0f, _voxelSize, _voxelSize) + offSet;
         sideVertexes[1].TextureCoordinate = uvPositionTop;
-        //sideVertexes[1].Normal = normal;
+        sideVertexes[1].LightIntensity = lightIntensity;
+        if (neighbours[6] != 0)
+        {
+            sideVertexes[1].LightIntensity *= OcculusionFactor;
+        }
 
         sideVertexes[2].Position = vectorOfPosition + new Vector3(_voxelSize, _voxelSize, _voxelSize) + offSet;
         sideVertexes[2].TextureCoordinate = uvPositionTop + new Vector2(uvScale.X, 0);
-        // sideVertexes[2].Normal = normal;
+        sideVertexes[2].LightIntensity = lightIntensity;
+        if (neighbours[6] != 0)
+        {
+            sideVertexes[2].LightIntensity *= OcculusionFactor;
+        }
 
         sideVertexes[3].Position = vectorOfPosition + new Vector3(_voxelSize, 0f, _voxelSize) + offSet;
         sideVertexes[3].TextureCoordinate = uvPositionTop + uvScale;
-        //  sideVertexes[3].Normal = normal;
+        sideVertexes[3].LightIntensity = lightIntensity;
+        if (neighbours[7] != 0)
+        {
+            sideVertexes[3].LightIntensity *= OcculusionFactor;
+        }
 
         int[] indices = { 1, 2, 0, 0, 2, 3 };
 
@@ -217,7 +296,7 @@ public partial class ChunkVisualsGeneratorNode : Node
     }
 
     private void AddBottomSide(List<VertexWithUv> vertices, List<int> indexes, int x, int y, int z,
-        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale)
+        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale, float lightIntensity)
     {
         //  var normal = Vector3.UnitY;
         var startIndex = vertices.Count;
@@ -225,19 +304,19 @@ public partial class ChunkVisualsGeneratorNode : Node
         var sideVertexes = new VertexWithUv[4];
         sideVertexes[0].Position = vectorOfPosition + new Vector3(0f, 0f, 0f) + offSet;
         sideVertexes[0].TextureCoordinate = uvPositionTop + new Vector2(0, uvScale.Y);
-        //  sideVertexes[0].Normal = normal;
+        sideVertexes[0].LightIntensity = lightIntensity;
 
         sideVertexes[1].Position = vectorOfPosition + new Vector3(_voxelSize, 0f, 0f) + offSet;
         sideVertexes[1].TextureCoordinate = uvPositionTop + uvScale;
-        //  sideVertexes[1].Normal = normal;
+        sideVertexes[1].LightIntensity = lightIntensity;
 
         sideVertexes[2].Position = vectorOfPosition + new Vector3(_voxelSize, 0f, _voxelSize) + offSet;
         sideVertexes[2].TextureCoordinate = uvPositionTop + new Vector2(uvScale.X, 0);
-        //  sideVertexes[2].Normal = normal;
+        sideVertexes[2].LightIntensity = lightIntensity;
 
         sideVertexes[3].Position = vectorOfPosition + new Vector3(0f, 0f, _voxelSize) + offSet;
         sideVertexes[3].TextureCoordinate = uvPositionTop;
-        // sideVertexes[3].Normal = normal;
+        sideVertexes[3].LightIntensity = lightIntensity;
 
 
         int[] indices = { 1, 2, 0, 0, 2, 3 };
@@ -247,7 +326,7 @@ public partial class ChunkVisualsGeneratorNode : Node
     }
 
     private void AddTopSide(List<VertexWithUv> vertices, List<int> indexes, int x, int y, int z,
-        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale)
+        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale, float lightIntensity, int[] neighBours)
     {
         // var normal = Vector3.UnitY;
         var startIndex = vertices.Count;
@@ -255,20 +334,29 @@ public partial class ChunkVisualsGeneratorNode : Node
         var sideVertexes = new VertexWithUv[4];
         sideVertexes[0].Position = vectorOfPosition + new Vector3(0f, _voxelSize, 0f) + offSet;
         sideVertexes[0].TextureCoordinate = uvPositionTop;
-        sideVertexes[0].LightIntensity = 1;
-
+        sideVertexes[0].LightIntensity = lightIntensity;
+        if (neighBours[11] != 0)
+        {
+            sideVertexes[0].LightIntensity *= OcculusionFactor;
+        }
+        
         sideVertexes[1].Position = vectorOfPosition + new Vector3(_voxelSize, _voxelSize, 0f) + offSet;
         sideVertexes[1].TextureCoordinate = uvPositionTop + new Vector2(uvScale.X, 0);
-        sideVertexes[1].LightIntensity = 1;
-
+        sideVertexes[1].LightIntensity = lightIntensity;
+        if (neighBours[11] != 0)
+        {
+            sideVertexes[1].LightIntensity *= OcculusionFactor;
+        }
+        
         sideVertexes[2].Position = vectorOfPosition + new Vector3(_voxelSize, _voxelSize, _voxelSize) + offSet;
         sideVertexes[2].TextureCoordinate = uvPositionTop + uvScale;
-        sideVertexes[2].LightIntensity = 1;
-
+        sideVertexes[2].LightIntensity = lightIntensity;
+      
+        
         sideVertexes[3].Position = vectorOfPosition + new Vector3(0f, _voxelSize, _voxelSize) + offSet;
         sideVertexes[3].TextureCoordinate = uvPositionTop + new Vector2(0, uvScale.Y);
-         sideVertexes[3].LightIntensity = 1;
-
+        sideVertexes[3].LightIntensity = lightIntensity;
+     
 
         int[] indices = { 1, 2, 0, 0, 2, 3 };
 
@@ -277,7 +365,7 @@ public partial class ChunkVisualsGeneratorNode : Node
     }
 
     private void AddRightSide(List<VertexWithUv> vertices, List<int> indexes, int x, int y, int z,
-        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale)
+        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale, float lightIntensity, int[] neighBours)
     {
         //var normal = Vector3.UnitZ;
         var startIndex = vertices.Count;
@@ -285,19 +373,27 @@ public partial class ChunkVisualsGeneratorNode : Node
         var sideVertexes = new VertexWithUv[4];
         sideVertexes[0].Position = vectorOfPosition + new Vector3(_voxelSize, 0f, _voxelSize) + offSet;
         sideVertexes[0].TextureCoordinate = uvPositionTop + new Vector2(0, uvScale.Y);
-        //sideVertexes[0].Normal = normal;
+        sideVertexes[0].LightIntensity = lightIntensity;
+        if (neighBours[9] != 0)
+        {
+            sideVertexes[0].LightIntensity *= OcculusionFactor;
+        }
 
         sideVertexes[1].Position = vectorOfPosition + new Vector3(_voxelSize, _voxelSize, 0f) + offSet;
         sideVertexes[1].TextureCoordinate = uvPositionTop + new Vector2(uvScale.X, 0);
-        // sideVertexes[1].Normal = normal;
+        sideVertexes[1].LightIntensity = lightIntensity;
 
         sideVertexes[2].Position = vectorOfPosition + new Vector3(_voxelSize, _voxelSize, _voxelSize) + offSet;
         sideVertexes[2].TextureCoordinate = uvPositionTop;
-        //sideVertexes[2].Normal = normal;
+        sideVertexes[2].LightIntensity = lightIntensity;
 
         sideVertexes[3].Position = vectorOfPosition + new Vector3(_voxelSize, 0f, 0f) + offSet;
         sideVertexes[3].TextureCoordinate = uvPositionTop + uvScale;
-        //sideVertexes[3].Normal = normal;
+        sideVertexes[3].LightIntensity = lightIntensity;
+        if (neighBours[9] != 0)
+        {
+            sideVertexes[3].LightIntensity *= OcculusionFactor;
+        }
 
         int[] indices = { 0, 2, 1, 0, 1, 3 };
 
@@ -306,7 +402,7 @@ public partial class ChunkVisualsGeneratorNode : Node
     }
 
     private void AddLeftSide(List<VertexWithUv> vertices, List<int> indexes, int x, int y, int z,
-        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale)
+        Vector3 offSet, Vector2 uvPositionTop, Vector2 uvScale, float lightIntensity, int[] neighBours)
     {
         //var normal = Vector3.UnitZ;
         var startIndex = vertices.Count;
@@ -314,19 +410,28 @@ public partial class ChunkVisualsGeneratorNode : Node
         var sideVertexes = new VertexWithUv[4];
         sideVertexes[0].Position = vectorOfPosition + new Vector3(0f, 0f, _voxelSize) + offSet;
         sideVertexes[0].TextureCoordinate = uvPositionTop + uvScale;
-        //  sideVertexes[0].Normal = normal;
+        sideVertexes[0].LightIntensity = lightIntensity;
+        if (neighBours[8] != 0)
+        {
+            sideVertexes[0].LightIntensity *= OcculusionFactor;
+        }
 
         sideVertexes[1].Position = vectorOfPosition + new Vector3(0f, _voxelSize, 0f) + offSet;
         sideVertexes[1].TextureCoordinate = uvPositionTop;
-        //sideVertexes[1].Normal = normal;
+        sideVertexes[1].LightIntensity = lightIntensity;
+
 
         sideVertexes[2].Position = vectorOfPosition + new Vector3(0f, _voxelSize, _voxelSize) + offSet;
         sideVertexes[2].TextureCoordinate = uvPositionTop + new Vector2(uvScale.X, 0);
-        // sideVertexes[2].Normal = normal;
+        sideVertexes[2].LightIntensity = lightIntensity;
 
         sideVertexes[3].Position = vectorOfPosition + new Vector3(0f, 0f, 0f) + offSet;
         sideVertexes[3].TextureCoordinate = uvPositionTop + new Vector2(0, uvScale.Y);
-        // sideVertexes[3].Normal = normal;
+        sideVertexes[3].LightIntensity = lightIntensity;
+        if (neighBours[8] != 0)
+        {
+            sideVertexes[3].LightIntensity *= OcculusionFactor;
+        }
 
         int[] indices = { 0, 2, 1, 0, 1, 3 };
 
