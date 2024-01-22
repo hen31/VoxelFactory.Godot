@@ -171,51 +171,51 @@ public partial class ChunkVisualsGeneratorNode : Node
             down
 
             /*NeighbourBlock.UpBack*/,
-            GetBlockIdAt(x, y + 1, z - 1, chunkData, neighbourChunks)
+            up == 0 ? GetBlockIdAt(x, y + 1, z - 1, chunkData, neighbourChunks) : 0
 
             /*NeighbourBlock.UpBackRight*/,
-            GetBlockIdAt(x + 1, y + 1, z - 1, chunkData, neighbourChunks)
+            up == 0 ? GetBlockIdAt(x + 1, y + 1, z - 1, chunkData, neighbourChunks) : 0
 
             /*NeighbourBlock.UpRight*/,
-            GetBlockIdAt(x + 1, y + 1, z, chunkData, neighbourChunks)
+            up == 0 ? GetBlockIdAt(x + 1, y + 1, z, chunkData, neighbourChunks) : 0
 
             /*NeighbourBlock.UpBackLeft*/,
-            GetBlockIdAt(x - 1, y + 1, z - 1, chunkData, neighbourChunks)
+            up == 0 ? GetBlockIdAt(x - 1, y + 1, z - 1, chunkData, neighbourChunks) : 0
 
             /*NeighbourBlock.UpLeft*/,
-            GetBlockIdAt(x - 1, y + 1, z, chunkData, neighbourChunks)
+            up == 0 ? GetBlockIdAt(x - 1, y + 1, z, chunkData, neighbourChunks) : 0
 
             /*NeighbourBlock.UpFront*/,
-            GetBlockIdAt(x, y + 1, z + 1, chunkData, neighbourChunks)
+            up == 0 ? GetBlockIdAt(x, y + 1, z + 1, chunkData, neighbourChunks) : 0
 
             /*NeighbourBlock.UpFrontLeft*/,
-            GetBlockIdAt(x - 1, y + 1, z + 1, chunkData, neighbourChunks)
+            up == 0 ? GetBlockIdAt(x - 1, y + 1, z + 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.UpFrontRight*/,
-            GetBlockIdAt(x + 1, y + 1, z + 1, chunkData, neighbourChunks)
+            up == 0 ? GetBlockIdAt(x + 1, y + 1, z + 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.DownFront*/,
-            GetBlockIdAt(x, y - 1, z + 1, chunkData, neighbourChunks)
+            front == 0 ? GetBlockIdAt(x, y - 1, z + 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.FrontLeft*/,
-            GetBlockIdAt(x - 1, y, z + 1, chunkData, neighbourChunks)
+            left == 0 || front == 0 ? GetBlockIdAt(x - 1, y, z + 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.FrontRight*/,
-            GetBlockIdAt(x + 1, y, z + 1, chunkData, neighbourChunks)
+            right == 0 || front == 0 ? GetBlockIdAt(x + 1, y, z + 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.BackLeft*/,
-            GetBlockIdAt(x - 1, y, z - 1, chunkData, neighbourChunks)
+            back == 0 || left == 0 ? GetBlockIdAt(x - 1, y, z - 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.BackRight*/,
-            GetBlockIdAt(x + 1, y, z - 1, chunkData, neighbourChunks)
+            back == 0 || right == 0 ? GetBlockIdAt(x + 1, y, z - 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.BackDown*/,
-            GetBlockIdAt(x, y - 1, z - 1, chunkData, neighbourChunks)
+            back == 0 ? GetBlockIdAt(x, y - 1, z - 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.LeftDown*/,
-            GetBlockIdAt(x - 1, y - 1, z, chunkData, neighbourChunks)
+            left == 0 ? GetBlockIdAt(x - 1, y - 1, z, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.RightDown*/,
-            GetBlockIdAt(x + 1, y - 1, z, chunkData, neighbourChunks)
+            right == 0 ? GetBlockIdAt(x + 1, y - 1, z, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.LeftBackDown*/,
-            GetBlockIdAt(x - 1, y - 1, z - 1, chunkData, neighbourChunks)
+            back == 0 || left == 0 ? GetBlockIdAt(x - 1, y - 1, z - 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.LeftFrontDown*/,
-            GetBlockIdAt(x - 1, y - 1, z + 1, chunkData, neighbourChunks)
+            front == 0 || left == 0 ? GetBlockIdAt(x - 1, y - 1, z + 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.RightBackDown*/,
-            GetBlockIdAt(x + 1, y - 1, z - 1, chunkData, neighbourChunks)
+            back == 0 || right == 0 ? GetBlockIdAt(x + 1, y - 1, z - 1, chunkData, neighbourChunks) : 0
             /*NeighbourBlock.RightFrontDown*/,
-            GetBlockIdAt(x + 1, y - 1, z + 1, chunkData, neighbourChunks)
+            front == 0 || right == 0 ? GetBlockIdAt(x + 1, y - 1, z + 1, chunkData, neighbourChunks) : 0
         };
 
         /*    neighboursDictionary.Add(NeighbourBlock.Left | NeighbourBlock.Front,
@@ -341,7 +341,7 @@ public partial class ChunkVisualsGeneratorNode : Node
         sideVertexes[0].LightIntensity = lightIntensity;
         if (neighbours[(int)NeighbourBlock.BackDown] != 0
             || neighbours[(int)NeighbourBlock.BackLeft] != 0
-            ||  neighbours[(int)NeighbourBlock.LeftBackDown] != 0)
+            || neighbours[(int)NeighbourBlock.LeftBackDown] != 0)
         {
             sideVertexes[0].LightIntensity *= OcculusionFactor;
         }
@@ -367,7 +367,7 @@ public partial class ChunkVisualsGeneratorNode : Node
         sideVertexes[3].LightIntensity = lightIntensity;
         if (neighbours[(int)NeighbourBlock.BackDown] != 0
             || neighbours[(int)NeighbourBlock.BackRight] != 0
-            ||  neighbours[(int)NeighbourBlock.RightBackDown] != 0)
+            || neighbours[(int)NeighbourBlock.RightBackDown] != 0)
         {
             sideVertexes[3].LightIntensity *= OcculusionFactor;
         }
