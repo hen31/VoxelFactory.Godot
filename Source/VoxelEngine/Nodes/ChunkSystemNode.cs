@@ -105,12 +105,17 @@ public partial class ChunkSystemNode : Node3D
 				}
 				else
 				{
-					var neighbours = new ChunkData[4];
+					var neighbours = new ChunkData[8];
 					neighbours[0] = GetChunkAt(new ChunkVector(x, y + 1));
 					neighbours[1] = GetChunkAt(new ChunkVector(x + 1, y));
 					neighbours[2] = GetChunkAt(new ChunkVector(x, y - 1));
 					neighbours[3] = GetChunkAt(new ChunkVector(x - 1, y));
 
+					neighbours[4] = GetChunkAt(new ChunkVector(x - 1, y + 1));
+					neighbours[5] = GetChunkAt(new ChunkVector(x + 1, y + 1));
+
+					neighbours[6] = GetChunkAt(new ChunkVector(x + 1, y - 1));
+					neighbours[7] = GetChunkAt(new ChunkVector(x - 1, y - 1));
 					var visualizationNode = new ChunkVisualNode();
 
 					visualizationNode.Position = new Vector3(x * _chunkSize.X * VoxelSize,
@@ -132,7 +137,7 @@ public partial class ChunkSystemNode : Node3D
 
 		foreach (var visualNotLongerInRange in toDelete)
 		{
-			//   Entity.Scene.Entities.Remove(visualNotLongerInRange.Entity);
+			visualNotLongerInRange.QueueFree();
 			_currentVisuals.Remove(visualNotLongerInRange);
 		}
 	}
