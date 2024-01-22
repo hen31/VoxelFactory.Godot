@@ -11,6 +11,7 @@ namespace TurtleGames.VoxelEngine;
 [GlobalClass]
 public partial class ChunkVisualsGeneratorNode : Node
 {
+    private int _threadCount = 2;
     public const float OcculusionFactor = 0.7f;
     [Export] private float _voxelSize = 1f;
     private CancellationTokenSource _cancellationToken;
@@ -25,7 +26,10 @@ public partial class ChunkVisualsGeneratorNode : Node
 
         _cancellationToken = new CancellationTokenSource();
         var token = _cancellationToken.Token;
-        Task.Factory.StartNew(() => RunCalculationThread(token), TaskCreationOptions.LongRunning);
+        for (int i = 0; i < _threadCount; i++)
+        {
+            Task.Factory.StartNew(() => RunCalculationThread(token), TaskCreationOptions.LongRunning);
+        }
     }
 
     public void Cancel()
