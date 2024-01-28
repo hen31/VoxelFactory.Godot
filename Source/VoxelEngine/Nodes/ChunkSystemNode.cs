@@ -22,6 +22,9 @@ public partial class ChunkSystemNode : Node3D
 	[Export] public bool OnlyInitialGeneration { get; set; } = false;
 
 	[Export] public Material BlockMaterial { get; set; }
+	
+	[Export(PropertyHint.Layers3DPhysics)]
+	public uint CollisionLayer { get; set; }
 
 	private List<ChunkVisualNode> _currentVisuals = new();
 
@@ -127,6 +130,7 @@ public partial class ChunkSystemNode : Node3D
 					visualizationNode.VoxelSize = VoxelSize;
 					visualizationNode.VisualGeneratorNode = _chunkVisualGenerator;
 					visualizationNode.Neighbours = neighbours;
+					visualizationNode.CollisionLayer = CollisionLayer;
 					AddChild(visualizationNode);
 
 					_currentVisuals.Add(visualizationNode);

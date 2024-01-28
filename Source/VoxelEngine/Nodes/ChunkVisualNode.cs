@@ -19,6 +19,8 @@ namespace TurtleGames.VoxelEngine
         public Material Material { get; set; }
         public ChunkData[] Neighbours { get; set; }
         public ChunkVisualsGeneratorNode VisualGeneratorNode { get; set; }
+        
+        public uint CollisionLayer { get; set; }
 
         public void Start()
         {
@@ -77,7 +79,7 @@ namespace TurtleGames.VoxelEngine
                 var meshNode = this.GetOrCreate<MeshInstance3D>();
                 meshNode.Mesh = _request.Model;
                 var staticBody = this.GetOrCreate<StaticBody3D>();
-
+                staticBody.CollisionLayer = CollisionLayer;
                 var collisionShape = staticBody.GetOrCreate<CollisionShape3D>();
                 var shape =  new ConcavePolygonShape3D();
                 shape.Data = _request.VisualsData.Indexes.Select(b => _request.VisualsData.Vertexes[b].Position).ToArray();

@@ -19,7 +19,9 @@ public partial class ChunkVisualsGeneratorNode : Node
 
     public Dictionary<ushort, BlockTextureUvMapping> BlockUvMapping { get; set; }
     public Material Material { get; set; }
+    
 
+    
     public override void _Ready()
     {
         //_voxelSize = Entity.Get<ChunkSystemComponent>().VoxelSize;

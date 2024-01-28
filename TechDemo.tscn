@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://7fe3pm8rpn2o"]
+[gd_scene load_steps=13 format=3 uid="uid://7fe3pm8rpn2o"]
 
 [ext_resource type="Script" path="res://Source/VoxelEngine/Nodes/ChunkSystemNode.cs" id="1_c2ome"]
 [ext_resource type="Script" path="res://cameratemp.gd" id="1_heclq"]
@@ -9,8 +9,11 @@
 [ext_resource type="Resource" uid="uid://bhe8x2nbksuii" path="res://Assets/NoiseSettings/ContinentalnessNoiseSettings.tres" id="5_3voqx"]
 [ext_resource type="Resource" uid="uid://cv2ekltj4nbcl" path="res://Assets/NoiseSettings/ErrosionNoiseSettings.tres" id="6_b5j42"]
 [ext_resource type="Script" path="res://DebugLabel.gd" id="9_7diy5"]
+[ext_resource type="Script" path="res://Source/PlayerNode.cs" id="10_731dn"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_ntp3h"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_lds5e"]
 
 [node name="Node3D" type="Node3D"]
 
@@ -19,8 +22,8 @@ environment = ExtResource("1_rp8t8")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, 0)
+visible = false
 environment = ExtResource("1_rp8t8")
-current = true
 script = ExtResource("1_heclq")
 
 [node name="ChunkSystem" type="Node3D" parent="." node_paths=PackedStringArray("_chunkGenerator", "_chunkVisualGenerator", "Camera")]
@@ -31,6 +34,7 @@ Camera = NodePath("../Camera3D")
 _chunkSize = Vector2(16, 16)
 Radius = 12
 BlockMaterial = ExtResource("4_xcaqh")
+CollisionLayer = 1
 
 [node name="ChunkGenerator" type="Node3D" parent="."]
 script = ExtResource("2_od6uj")
@@ -54,3 +58,17 @@ transform = Transform3D(1, 0, 0, 0, 0.620423, 0.784268, 0, -0.784268, 0.620423, 
 offset_right = 40.0
 offset_bottom = 23.0
 script = ExtResource("9_7diy5")
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 47, 0)
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+shape = SubResource("CapsuleShape3D_lds5e")
+
+[node name="PlayerNode" type="Node3D" parent="CharacterBody3D"]
+script = ExtResource("10_731dn")
+
+[node name="Camera3D" type="Camera3D" parent="CharacterBody3D/PlayerNode"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.565327, 0)
+current = true
