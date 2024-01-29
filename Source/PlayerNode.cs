@@ -10,7 +10,9 @@ public partial class PlayerNode : Node3D
     private Camera3D _camera;
 
     [Export] private float MovementSpeed { get; set; } = 4f;
+    [Export] private float JumpSpeed { get; set; } = 6f;
     [Export] private float MouseSensitivity { get; set; } = 0.002f;
+    [Export] private float Gravity { get; set; } = -9.8f;
 
     public override void _Ready()
     {
@@ -21,8 +23,19 @@ public partial class PlayerNode : Node3D
 
     public override void _PhysicsProcess(double delta)
     {
-        _characterBody3D.Velocity = new Vector3(0f, -9.8f, 0f); //Gravity
+        _characterBody3D.Velocity =
+            new Vector3(_characterBody3D.Velocity.X, _characterBody3D.Velocity.Y + Gravity * (float)delta,
+                _characterBody3D.Velocity.Z);
+        SetVelocityFromInputs();
         _characterBody3D.MoveAndSlide();
+    }
+
+    private void SetVelocityFromInputs()
+    {
+        var input = Input.GetVector("movement_left", "movement_right", "movement_forward", "movement_backward");
+        var direction = _characterBody3D.Transform.Basis * new Vector3(input.X, 0, input.Y);
+        _characterBody3D.Velocity = new Vector3(direction.X * MovementSpeed, _characterBody3D.Velocity.Y,
+            direction.Z * MovementSpeed);
     }
 
     public override void _UnhandledInput(InputEvent inputEvent)
@@ -33,6 +46,12 @@ public partial class PlayerNode : Node3D
             var cameraAngle = Mathf.Clamp(_camera.Rotation.X + -mouseMotionEvent.Relative.Y * MouseSensitivity,
                 -1.48f, 1.48f);
             _camera.Rotation = new Vector3(cameraAngle, 0, 0);
+        }
+        else if (inputEvent is InputEventKey keyEvent && keyEvent.IsActionPressed("jump") &&
+                 _characterBody3D.IsOnFloor())
+        {
+            _characterBody3D.Velocity =
+                new Vector3(_characterBody3D.Velocity.X, JumpSpeed, _characterBody3D.Velocity.Z);
         }
     }
 }
