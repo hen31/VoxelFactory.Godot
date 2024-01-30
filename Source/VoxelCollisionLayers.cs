@@ -2,6 +2,6 @@
 
 public enum VoxelCollisionLayers : uint
 {
-    Floor = 1
+    Voxel = 1
     
 }

@@ -222,4 +222,14 @@ public partial class ChunkSystemNode : Node3D
 				?.Remesh();
 		}
 	}
+
+	public Dictionary<ChunkVector, ChunkData> GetActiveChunks()
+	{
+		return GameState.Chunks;
+	}
+
+	public ChunkVisualNode GetVisualNodeForChunk(ChunkData chunkData)
+	{
+		return _currentVisuals.FirstOrDefault(b => b.ChunkData == chunkData);
+	}
 }

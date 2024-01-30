@@ -14,6 +14,8 @@
 [sub_resource type="BoxMesh" id="BoxMesh_ntp3h"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_lds5e"]
+radius = 0.4
+height = 1.8
 
 [node name="Node3D" type="Node3D"]
 
@@ -30,7 +32,7 @@ script = ExtResource("1_heclq")
 script = ExtResource("1_c2ome")
 _chunkGenerator = NodePath("../ChunkGenerator")
 _chunkVisualGenerator = NodePath("../ChunkVisualGeneratorSystem")
-Camera = NodePath("../Camera3D")
+Camera = NodePath("../CharacterBody3D/PlayerNode/Camera3D")
 _chunkSize = Vector2(16, 16)
 Radius = 12
 BlockMaterial = ExtResource("4_xcaqh")
@@ -66,8 +68,9 @@ collision_layer = 2
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
 shape = SubResource("CapsuleShape3D_lds5e")
 
-[node name="PlayerNode" type="Node3D" parent="CharacterBody3D"]
+[node name="PlayerNode" type="Node3D" parent="CharacterBody3D" node_paths=PackedStringArray("ChunkSystem")]
 script = ExtResource("10_731dn")
+ChunkSystem = NodePath("../../ChunkSystem")
 
 [node name="Camera3D" type="Camera3D" parent="CharacterBody3D/PlayerNode"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.565327, 0)
