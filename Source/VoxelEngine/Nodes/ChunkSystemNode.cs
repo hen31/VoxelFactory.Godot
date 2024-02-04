@@ -26,6 +26,8 @@ public partial class ChunkSystemNode : Node3D
 	[Export(PropertyHint.Layers3DPhysics)]
 	public uint CollisionLayer { get; set; }
 
+	public LightingSystemNode LightSystemTemp { get; set; }
+
 	private List<ChunkVisualNode> _currentVisuals = new();
 
 	public List<BlockType> BlockTypes = new()
@@ -231,5 +233,16 @@ public partial class ChunkSystemNode : Node3D
 	public ChunkVisualNode GetVisualNodeForChunk(ChunkData chunkData)
 	{
 		return _currentVisuals.FirstOrDefault(b => b.ChunkData == chunkData);
+	}
+
+	/// <summary>
+	/// Only for testing
+	/// </summary>
+	public void RemeshAllChunks()
+	{
+		foreach (var visualNode in _currentVisuals)
+		{
+			visualNode.Remesh();
+		}
 	}
 }

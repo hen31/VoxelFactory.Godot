@@ -14,6 +14,10 @@ public partial class ChunkVisualsGeneratorNode : Node
     private int _threadCount = 2;
     public const float OcculusionFactor = 0.7f;
     [Export] private float _voxelSize = 1f;
+    
+    [Export]
+    public LightingSystemNode LightingSystemNode { get; set; }
+    
     private CancellationTokenSource _cancellationToken;
     private ConcurrentQueue<ChunkVisualsRequest> _calculationQueue = new ConcurrentQueue<ChunkVisualsRequest>();
 
@@ -51,6 +55,7 @@ public partial class ChunkVisualsGeneratorNode : Node
     {
         if (_calculationQueue.TryDequeue(out ChunkVisualsRequest request))
         {
+            LightingSystemNode.CalculateLighting(request);
             ChunkVisualData chunkVisualData = new ChunkVisualData();
             chunkVisualData.Vertexes = new List<VertexWithUv>();
             chunkVisualData.Indexes = new List<int>();
@@ -86,7 +91,8 @@ public partial class ChunkVisualsGeneratorNode : Node
                         CreateCubeMesh(vertices, indexes, neighbours, x, y, z, -offSet,
                             new BlockTextureUvMapping()
                             {
-                            }); //blockUvMapping[chunkData.Chunk[x, y, z]]
+                            },
+                            chunkData.LightData[x,y,z]); //blockUvMapping[chunkData.Chunk[x, y, z]]
                     }
                 }
             }
@@ -294,43 +300,45 @@ public partial class ChunkVisualsGeneratorNode : Node
         int[] neighBours, int x,
         int y, int z,
         Vector2 offSet,
-        BlockTextureUvMapping blockUvMapping)
+        BlockTextureUvMapping blockUvMapping,
+        byte lightingIntensity)
     {
+        var lightValue = MathUtils.Map(lightingIntensity, 0, 255, 0, 1);
         var offsetWithHeight = new Vector3(offSet.X, 0, offSet.Y);
         if (neighBours[(int)NeighbourBlock.Right] == 0)
         {
             AddRightSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.LeftSide, blockUvMapping.UvScale,
-                1f, neighBours);
+                lightValue, neighBours);
         }
 
         if (neighBours[(int)NeighbourBlock.Left] == 0)
         {
             AddLeftSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.LeftSide, blockUvMapping.UvScale,
-                1f, neighBours);
+                lightValue, neighBours);
         }
 
         if (neighBours[(int)NeighbourBlock.Up] == 0)
         {
             AddTopSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.TopSide, blockUvMapping.UvScale,
-                1f, neighBours);
+                lightValue, neighBours);
         }
 
         if (neighBours[(int)NeighbourBlock.Down] == 0)
         {
             AddBottomSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.BottomSide,
-                blockUvMapping.UvScale, 1f);
+                blockUvMapping.UvScale, lightValue);
         }
 
         if (neighBours[(int)NeighbourBlock.Front] == 0)
         {
             AddFrontSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.FrontSide,
-                blockUvMapping.UvScale, 1f, neighBours);
+                blockUvMapping.UvScale, lightValue, neighBours);
         }
 
         if (neighBours[(int)NeighbourBlock.Back] == 0)
         {
             AddBackSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.BackSide, blockUvMapping.UvScale,
-                1f, neighBours);
+                lightValue, neighBours);
         }
     }
 

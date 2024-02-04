@@ -19,44 +19,12 @@ namespace TurtleGames.VoxelEngine
         public Material Material { get; set; }
         public ChunkData[] Neighbours { get; set; }
         public ChunkVisualsGeneratorNode VisualGeneratorNode { get; set; }
-        
+
         public uint CollisionLayer { get; set; }
 
         public void Start()
         {
         }
-
-        private void GenerateVisuals(List<VertexWithUv> vertices, List<int> indexes)
-        {
-            var meshNode = this.GetOrCreate<MeshInstance3D>();
-       
-            if (vertices.Count == 0)
-            {
-                return;
-            }
-
-            SurfaceTool surfaceTool = new SurfaceTool();
-            surfaceTool.Begin(Mesh.PrimitiveType.Triangles);
-            surfaceTool.SetMaterial(Material);
-
-            foreach (var index in indexes)
-            {
-                var vertex = vertices[index];
-                surfaceTool.SetUV(vertex.TextureCoordinate);
-                surfaceTool.AddVertex(vertex.Position);
-            }
-
-            surfaceTool.GenerateNormals();
-            surfaceTool.Index();
-            surfaceTool.GenerateTangents();
-
-            var arrayMesh = surfaceTool.Commit();
-            meshNode.Mesh = arrayMesh;
-            surfaceTool.Dispose();
-
-       
-        }
-
 
         public override void _PhysicsProcess(double delta)
         {
@@ -81,8 +49,9 @@ namespace TurtleGames.VoxelEngine
                 var staticBody = this.GetOrCreate<StaticBody3D>();
                 staticBody.CollisionLayer = CollisionLayer;
                 var collisionShape = staticBody.GetOrCreate<CollisionShape3D>();
-                var shape =  new ConcavePolygonShape3D();
-                shape.Data = _request.VisualsData.Indexes.Select(b => _request.VisualsData.Vertexes[b].Position).ToArray();
+                var shape = new ConcavePolygonShape3D();
+                shape.Data = _request.VisualsData.Indexes.Select(b => _request.VisualsData.Vertexes[b].Position)
+                    .ToArray();
                 collisionShape.Shape = shape;
                 _request = null;
             }

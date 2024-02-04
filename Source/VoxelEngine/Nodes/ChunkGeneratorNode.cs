@@ -39,6 +39,7 @@ public partial class ChunkGeneratorNode : Node
             Position = position,
             Height = ChunkHeight,
             Chunk = new ushort[(int)ChunkSize.X, ChunkHeight, (int)ChunkSize.Y],
+            LightData = new byte[(int)ChunkSize.X, ChunkHeight, (int)ChunkSize.Y],
             Calculated = false
         };
         _calculationQueue.Enqueue(chunk);

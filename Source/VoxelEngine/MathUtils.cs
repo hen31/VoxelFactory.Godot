@@ -6,4 +6,5 @@ public class MathUtils
     {
         return (valueOfIn - minIn) * (maxOut - minOut) / (maxIn - minIn) + minOut;
     }
+    
 }

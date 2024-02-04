@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://7fe3pm8rpn2o"]
+[gd_scene load_steps=14 format=3 uid="uid://7fe3pm8rpn2o"]
 
 [ext_resource type="Script" path="res://Source/VoxelEngine/Nodes/ChunkSystemNode.cs" id="1_c2ome"]
 [ext_resource type="Script" path="res://cameratemp.gd" id="1_heclq"]
@@ -9,6 +9,7 @@
 [ext_resource type="Resource" uid="uid://bhe8x2nbksuii" path="res://Assets/NoiseSettings/ContinentalnessNoiseSettings.tres" id="5_3voqx"]
 [ext_resource type="Resource" uid="uid://cv2ekltj4nbcl" path="res://Assets/NoiseSettings/ErrosionNoiseSettings.tres" id="6_b5j42"]
 [ext_resource type="Script" path="res://DebugLabel.gd" id="9_7diy5"]
+[ext_resource type="Script" path="res://Source/VoxelEngine/Nodes/LightingSystemNode.cs" id="9_gu0qm"]
 [ext_resource type="Script" path="res://Source/PlayerNode.cs" id="10_731dn"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_ntp3h"]
@@ -45,8 +46,13 @@ ChunkSize = Vector2(16, 16)
 Continentalness = ExtResource("5_3voqx")
 Errosion = ExtResource("6_b5j42")
 
-[node name="ChunkVisualGeneratorSystem" type="Node3D" parent="."]
+[node name="ChunkVisualGeneratorSystem" type="Node3D" parent="." node_paths=PackedStringArray("LightingSystemNode")]
 script = ExtResource("2_8kfkr")
+LightingSystemNode = NodePath("../LightingSystemNode")
+
+[node name="LightingSystemNode" type="Node3D" parent="." node_paths=PackedStringArray("ChunkSystemNode")]
+script = ExtResource("9_gu0qm")
+ChunkSystemNode = NodePath("../ChunkSystem")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 49.2984, -5.12069)
