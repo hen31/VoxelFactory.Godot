@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Godot;
 
 namespace TurtleGames.VoxelEngine;
@@ -10,25 +13,42 @@ public partial class LightingSystemNode : Node3D
 {
     [Export] public ChunkSystemNode ChunkSystemNode { get; set; }
 
-    public override void _Ready()
+
+    public void DoCalculation(ChunkVisualsRequest request)
     {
-        ChunkSystemNode.LightSystemTemp = this;
+        for (int i = 0; i < request.Neighbours.Length; i++)
+        {
+            var neighbour = request.Neighbours[i];
+            if (neighbour.LightCalculated == false)
+            {
+                neighbour = neighbour.CloneIfNeededForLightingCalculations();
+                request.Neighbours[i] = neighbour;
+                CalculateLighting(neighbour, ChunkSystemNode.GetNeighbours(neighbour.Position.X, neighbour.Position.Y));
+            }
+        }
+
+        CalculateLighting(request.ChunkData, request.Neighbours);
+        request.ChunkData.LightCalculated = true;
     }
 
-    public void CalculateLighting(ChunkVisualsRequest requestData)
+    private CancellationTokenSource _cancellationToken;
+    private ConcurrentQueue<ChunkVisualsRequest> _calculationQueue = new ConcurrentQueue<ChunkVisualsRequest>();
+    private int _threadCount = 1;
+
+    public void CalculateLighting(ChunkData chunk, ChunkData[] neighbours)
     {
         var allLightSources = new List<Vector3>();
-        allLightSources.AddRange(AddLightSources(requestData.ChunkData));
-        ProcessLightSources(requestData, allLightSources);
+        allLightSources.AddRange(AddLightSources(chunk));
+        ProcessLightSources(chunk, neighbours, allLightSources);
     }
 
-    private void ProcessLightSources(ChunkVisualsRequest visualRequest, List<Vector3> allLightSources)
+    private void ProcessLightSources(ChunkData chunk, ChunkData[] neighbours, List<Vector3> allLightSources)
     {
-        Queue<Vector3> _toProcess = new Queue<Vector3>(allLightSources);
+        Queue<Vector3> toProcess = new Queue<Vector3>(allLightSources);
 
-        while (_toProcess.TryDequeue(out Vector3 lightPosition))
+        while (toProcess.TryDequeue(out Vector3 lightPosition))
         {
-            var positionData = GetBlockPositionData(visualRequest, lightPosition);
+            var positionData = GetBlockPositionData(chunk, neighbours, lightPosition);
             if (positionData.ChunkData == null)
             {
                 continue;
@@ -41,31 +61,58 @@ public partial class LightingSystemNode : Node3D
             //spreadLight
             if (lightPosition.Y > 0)
             {
-                var globalDownPosition = lightPosition - new Vector3(0,  1, 0);
-                var downPosition = GetBlockPositionData(visualRequest, globalDownPosition);
-                if (downPosition.ChunkData.Chunk[(int)downPosition.Block.X,
-                        (int)downPosition.Block.Y,
-                        (int)downPosition.Block.Z] == 0)
+                var globalDownPosition = lightPosition - new Vector3(0, 1, 0);
+                var downPosition = GetBlockPositionData(chunk, neighbours, globalDownPosition);
+                if (SpreadLight(downPosition, currentLightValue))
                 {
-                    downPosition.ChunkData.LightData[(int)downPosition.Block.X,
-                        (int)downPosition.Block.Y,
-                        (int)downPosition.Block.Z] = currentLightValue;
-                    _toProcess.Enqueue(globalDownPosition);
-                }
-                else
-                {
-                    downPosition.ChunkData.LightData[(int)downPosition.Block.X,
-                        (int)downPosition.Block.Y,
-                        (int)downPosition.Block.Z] = currentLightValue;
+                    toProcess.Enqueue(globalDownPosition);
                 }
             }
+
+            /*   if (lightPosition.X > 0)
+               {
+                   var leftPosition = lightPosition - new Vector3(1, 0, 0);
+                   var leftPositionData = GetBlockPositionData(visualRequest, leftPosition);
+                   if (SpreadLight(leftPositionData, currentLightValue))
+                   {
+                       toProcess.Enqueue(leftPosition);
+                   }
+               }
+
+               if (lightPosition.X < visualRequest.ChunkData.Size.X - 1)
+               {
+                   var rightPosition = lightPosition + new Vector3(1, 0, 0);
+                   var rightPositionData = GetBlockPositionData(visualRequest, rightPosition);
+                   if (SpreadLight(rightPositionData, currentLightValue))
+                   {
+                       toProcess.Enqueue(rightPosition);
+                   }
+               }*/
         }
     }
 
-    private (ChunkData ChunkData, Vector3 Block) GetBlockPositionData(ChunkVisualsRequest visualRequest,
+    private static bool SpreadLight((ChunkData ChunkData, Vector3 Block) downPosition, byte currentLightValue)
+    {
+        if (downPosition.ChunkData.Chunk[(int)downPosition.Block.X,
+                (int)downPosition.Block.Y,
+                (int)downPosition.Block.Z] == 0
+            && downPosition.ChunkData.LightData[(int)downPosition.Block.X,
+                (int)downPosition.Block.Y,
+                (int)downPosition.Block.Z] < currentLightValue)
+        {
+            downPosition.ChunkData.LightData[(int)downPosition.Block.X,
+                (int)downPosition.Block.Y,
+                (int)downPosition.Block.Z] = currentLightValue;
+            return true;
+        }
+
+        return false;
+    }
+
+    private (ChunkData ChunkData, Vector3 Block) GetBlockPositionData(ChunkData chunk, ChunkData[] neighbours,
         Vector3 lightPosition)
     {
-        return (visualRequest.ChunkData, lightPosition);
+        return (chunk, lightPosition);
     }
 
 
@@ -86,6 +133,10 @@ public partial class LightingSystemNode : Node3D
                             x,
                             y,
                             z));
+                    }
+                    else
+                    {
+                        chunk.LightData[x, y, z] = 0;
                     }
                 }
             }

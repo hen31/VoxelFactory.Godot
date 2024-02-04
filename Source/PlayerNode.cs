@@ -22,17 +22,23 @@ public partial class PlayerNode : Node3D
 		Input.MouseMode = Input.MouseModeEnum.Captured;
 	}
 
+	private bool started = false;
 	public override void _PhysicsProcess(double delta)
 	{
+	
 		_characterBody3D.Velocity =
 			new Vector3(_characterBody3D.Velocity.X, _characterBody3D.Velocity.Y + Gravity * (float)delta,
 				_characterBody3D.Velocity.Z);
 		SetVelocityFromInputs();
-		_characterBody3D.MoveAndSlide();
+		if (started)
+		{
+			_characterBody3D.MoveAndSlide();
+		}
 
 
 		if (Input.IsActionPressed("primary_action"))
 		{
+			started = true;
 			var result = _camera.RayCast((uint)VoxelCollisionLayers.Voxel, 10f);
 			if (result != null)
 			{

@@ -11,21 +11,19 @@ namespace TurtleGames.VoxelEngine;
 [GlobalClass]
 public partial class ChunkVisualsGeneratorNode : Node
 {
-    private int _threadCount = 2;
+    private int _threadCount = 3;
     public const float OcculusionFactor = 0.7f;
     [Export] private float _voxelSize = 1f;
-    
-    [Export]
-    public LightingSystemNode LightingSystemNode { get; set; }
-    
+
+    [Export] public LightingSystemNode LightingSystemNode { get; set; }
+
     private CancellationTokenSource _cancellationToken;
     private ConcurrentQueue<ChunkVisualsRequest> _calculationQueue = new ConcurrentQueue<ChunkVisualsRequest>();
 
     public Dictionary<ushort, BlockTextureUvMapping> BlockUvMapping { get; set; }
     public Material Material { get; set; }
-    
 
-    
+
     public override void _Ready()
     {
         //_voxelSize = Entity.Get<ChunkSystemComponent>().VoxelSize;
@@ -55,13 +53,14 @@ public partial class ChunkVisualsGeneratorNode : Node
     {
         if (_calculationQueue.TryDequeue(out ChunkVisualsRequest request))
         {
-            LightingSystemNode.CalculateLighting(request);
+           LightingSystemNode.DoCalculation(request);
             ChunkVisualData chunkVisualData = new ChunkVisualData();
             chunkVisualData.Vertexes = new List<VertexWithUv>();
             chunkVisualData.Indexes = new List<int>();
 
             CalculateModel(request.ChunkData, request.Neighbours, chunkVisualData.Vertexes, chunkVisualData.Indexes,
                 BlockUvMapping);
+            
             request.Model = GenerateVisuals(chunkVisualData.Vertexes, chunkVisualData.Indexes, Material);
             request.VisualsData = chunkVisualData;
             request.IsCalculated = true;
@@ -91,8 +90,7 @@ public partial class ChunkVisualsGeneratorNode : Node
                         CreateCubeMesh(vertices, indexes, neighbours, x, y, z, -offSet,
                             new BlockTextureUvMapping()
                             {
-                            },
-                            chunkData.LightData[x,y,z]); //blockUvMapping[chunkData.Chunk[x, y, z]]
+                            }, chunkData, neighbourChunks); //blockUvMapping[chunkData.Chunk[x, y, z]]
                     }
                 }
             }
@@ -295,48 +293,110 @@ public partial class ChunkVisualsGeneratorNode : Node
         return 0;
     }
 
+    private static byte GetLightIntensityAt(int x, int y, int z, ChunkData chunkData, ChunkData[] neighbourChunks)
+    {
+        if (y <= 0 || y >= chunkData.Height - 1)
+        {
+            return 1; //no vertical chunkies
+        }
+
+        if (x >= 0 && x < chunkData.Size.X
+                   && z >= 0 && z < chunkData.Size.Y) //if block fully in chunk than really simple check
+        {
+            return chunkData.LightData[x, y, z];
+        }
+
+        if (x == -1)
+        {
+            if (z == -1)
+            {
+                return neighbourChunks[7].LightData[(int)chunkData.Size.X - 1, y, (int)chunkData.Size.Y - 1];
+            }
+
+            if (z > (int)chunkData.Size.Y - 1)
+            {
+                return neighbourChunks[4].LightData[(int)chunkData.Size.X - 1, y, 0];
+            }
+
+            return neighbourChunks[3].LightData[(int)chunkData.Size.X - 1, y, z];
+        }
+
+        if (x > (int)chunkData.Size.X - 1)
+        {
+            if (z == -1)
+            {
+                return neighbourChunks[6].LightData[0, y, (int)chunkData.Size.Y - 1];
+            }
+
+            if (z > (int)chunkData.Size.Y - 1)
+            {
+                return neighbourChunks[5].LightData[0, y, 0];
+            }
+
+            return neighbourChunks[1].LightData[0, y, z];
+        }
+
+        if (z == -1)
+        {
+            return neighbourChunks[2].LightData[x, y, (int)chunkData.Size.Y - 1];
+        }
+
+        if (z > (int)chunkData.Size.Y - 1)
+        {
+            return neighbourChunks[0].LightData[x, y, 0];
+        }
+
+        return 0;
+    }
+
 
     private void CreateCubeMesh(List<VertexWithUv> vertices, List<int> indexes,
         int[] neighBours, int x,
         int y, int z,
         Vector2 offSet,
         BlockTextureUvMapping blockUvMapping,
-        byte lightingIntensity)
+        ChunkData chunkData,
+        ChunkData[] neighbourChunks)
     {
-        var lightValue = MathUtils.Map(lightingIntensity, 0, 255, 0, 1);
         var offsetWithHeight = new Vector3(offSet.X, 0, offSet.Y);
         if (neighBours[(int)NeighbourBlock.Right] == 0)
         {
+            var lightValue = MathUtils.Map(GetLightIntensityAt(x + 1, y, z, chunkData, neighbourChunks), 0, 255, 0, 1);
             AddRightSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.LeftSide, blockUvMapping.UvScale,
                 lightValue, neighBours);
         }
 
         if (neighBours[(int)NeighbourBlock.Left] == 0)
         {
+            var lightValue = MathUtils.Map(GetLightIntensityAt(x - 1, y, z, chunkData, neighbourChunks), 0, 255, 0, 1);
             AddLeftSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.LeftSide, blockUvMapping.UvScale,
                 lightValue, neighBours);
         }
 
         if (neighBours[(int)NeighbourBlock.Up] == 0)
         {
+            var lightValue = MathUtils.Map(GetLightIntensityAt(x, y + 1, z, chunkData, neighbourChunks), 0, 255, 0, 1);
             AddTopSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.TopSide, blockUvMapping.UvScale,
                 lightValue, neighBours);
         }
 
         if (neighBours[(int)NeighbourBlock.Down] == 0)
         {
+            var lightValue = MathUtils.Map(GetLightIntensityAt(x, y - 1, z, chunkData, neighbourChunks), 0, 255, 0, 1);
             AddBottomSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.BottomSide,
                 blockUvMapping.UvScale, lightValue);
         }
 
         if (neighBours[(int)NeighbourBlock.Front] == 0)
         {
+            var lightValue = MathUtils.Map(GetLightIntensityAt(x, y, z + 1, chunkData, neighbourChunks), 0, 255, 0, 1);
             AddFrontSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.FrontSide,
                 blockUvMapping.UvScale, lightValue, neighBours);
         }
 
         if (neighBours[(int)NeighbourBlock.Back] == 0)
         {
+            var lightValue = MathUtils.Map(GetLightIntensityAt(x, y, z - 1, chunkData, neighbourChunks), 0, 255, 0, 1);
             AddBackSide(vertices, indexes, x, y, z, offsetWithHeight, blockUvMapping.BackSide, blockUvMapping.UvScale,
                 lightValue, neighBours);
         }

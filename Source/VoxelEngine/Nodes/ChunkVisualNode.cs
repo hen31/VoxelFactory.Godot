@@ -19,7 +19,6 @@ namespace TurtleGames.VoxelEngine
         public Material Material { get; set; }
         public ChunkData[] Neighbours { get; set; }
         public ChunkVisualsGeneratorNode VisualGeneratorNode { get; set; }
-
         public uint CollisionLayer { get; set; }
 
         public void Start()
@@ -39,7 +38,7 @@ namespace TurtleGames.VoxelEngine
             // Do stuff every new frame
             if (_request == null)
             {
-                _request = VisualGeneratorNode.EnequeVisualCreation(ChunkData, Neighbours);
+                _request = VisualGeneratorNode.EnequeVisualCreation(ChunkData, Neighbours.ToArray());
             }
             else
             {

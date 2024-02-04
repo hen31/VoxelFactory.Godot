@@ -139,12 +139,8 @@ public partial class ChunkGeneratorNode : Node
     {
         if (_calculationQueue.TryDequeue(out ChunkData toCalculate))
         {
-            Debug.WriteLineIf(DebugWrite,
-                $"Start calculation for cunk X:{toCalculate.Position.X},Y:{toCalculate.Position.Y}");
             GenerateChunk(toCalculate);
             toCalculate.Calculated = true;
-            Debug.WriteLineIf(DebugWrite,
-                $"End calculation for cunk X:{toCalculate.Position.X},Y:{toCalculate.Position.Y}");
         }
         else
         {
