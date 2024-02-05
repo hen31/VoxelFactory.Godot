@@ -40,11 +40,11 @@ public partial class PlayerNode : Node3D
 		{
 			started = true;
 			var result = _camera.RayCast((uint)VoxelCollisionLayers.Voxel, 10f);
-			if (result != null)
+			if (result != null && result.TryGetValue("collider", out var collider))
 			{
 				var worldPosition = (Vector3)result["position"];
 				var hitPoint = worldPosition - (Vector3)result["normal"] * 0.5f;
-				var chunkVisual = ((Node)result["collider"]).GetParent<ChunkVisualNode>();
+				var chunkVisual = ((Node)collider).GetParent<ChunkVisualNode>();
 
 				var point = ChunkSystem.PointToChunkPosition(hitPoint);
 				var chunkDataFromRay = chunkVisual?.ChunkData;
